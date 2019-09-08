@@ -84,8 +84,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="《算法-第四版》排序部分笔记"><a href="#《算法-第四版》排序部分笔记" class="headerlink" title="《算法 第四版》排序部分笔记"></a>《算法 第四版》排序部分笔记</h1><p><strong>(总结的非常水，只用于自己复习使用)</strong></p>
-<p>数中讲到的排序算法主要分为以下几种:</p>
+        <h1 id="《算法-第四版》排序部分笔记"><a href="#《算法-第四版》排序部分笔记" class="headerlink" title="《算法 第四版》排序部分笔记"></a>《算法 第四版》排序部分笔记</h1><p>书中讲到的排序算法主要分为以下几种:</p>
 <ul>
 <li>选择排序</li>
 <li>插入排序</li>
@@ -93,7 +92,12 @@
 <li>归并排序</li>
 <li>快速排序</li>
 </ul>
-<h2 id="选择排序"><a href="#选择排序" class="headerlink" title="选择排序"></a>选择排序</h2><p>选择排序是最简单的一种排序，方法极其粗暴，就是不断找出最小并与当前未有序的数组进行交换，当循环走到数组末端时，数组就有序了.<br>以下是选择排序的代码实现:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public void sort(Comparable[] a) &#123;</span><br><span class="line">        int len = a.length;</span><br><span class="line"></span><br><span class="line">        for (int i = 0; i &lt; len; i++) &#123;</span><br><span class="line">            int min = i;</span><br><span class="line"></span><br><span class="line">            for (int j = i + 1; j &lt; len; j++)</span><br><span class="line">                //标记比已知最小元素还小的元素的索引</span><br><span class="line">                if (SortTemplate.less(a[j], a[min])) min = j;</span><br><span class="line">            //和现在的最小元素交换位置</span><br><span class="line">            SortTemplate.exchange(a, i, min);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    //以动态的眼光来看要排序的数组实际会被拆分成两个数组，</span><br><span class="line">    //已被排序的数组和未被排序的数组.代码运行会经过这样的</span><br><span class="line">    //过程,0-&gt;len找出最小的放在0,1-&gt;len找出最小的放在1,</span><br><span class="line">    //...,len-1-&gt;len找出最小的放在len-1</span><br></pre></td></tr></table></figure></p>
+<h2 id="选择排序"><a href="#选择排序" class="headerlink" title="选择排序"></a>选择排序</h2><p>选择排序就是在数组中找到最小的元素,然后将它和数组第一个元素交换(默认正序,若第一个元素就是最小的元素,那就和自己交换).<br>然后在剩下的元素中找到最小的元素重复上述操作,这里需要注意数组边界防止越界</p>
+<h3 id="选择排序的特点"><a href="#选择排序的特点" class="headerlink" title="选择排序的特点"></a>选择排序的特点</h3><ul>
+<li>运行时间和输入数据无关：不管输入的数组是有序或无序的,都会进行比较找出最小元素,所以会比较低效</li>
+<li>数据移动最少:交换次数与数组大小为线性关系，会进行N次交换</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public void sort(Comparable[] a) &#123;</span><br><span class="line">        int len = a.length;</span><br><span class="line"></span><br><span class="line">        for (int i = 0; i &lt; len; i++) &#123;</span><br><span class="line">            int min = i;</span><br><span class="line"></span><br><span class="line">            for (int j = i + 1; j &lt; len; j++)</span><br><span class="line">                //标记比已知最小元素还小的元素的索引</span><br><span class="line">                if (SortTemplate.less(a[j], a[min])) min = j;</span><br><span class="line">            //和现在的最小元素交换位置</span><br><span class="line">            SortTemplate.exchange(a, i, min);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    //以动态的眼光来看要排序的数组实际会被拆分成两个数组，</span><br><span class="line">    //已被排序的数组和未被排序的数组.代码运行会经过这样的</span><br><span class="line">    //过程,0-&gt;len找出最小的放在0,1-&gt;len找出最小的放在1,</span><br><span class="line">    //...,len-1-&gt;len找出最小的放在len-1</span><br></pre></td></tr></table></figure>
 <h3 id="对选择排序的分析"><a href="#对选择排序的分析" class="headerlink" title="对选择排序的分析"></a>对选择排序的分析</h3><p>便于理解，代码短</p>
 <p>但是过于死板，即使数组已经有序仍然会执行.效率较差,算法时间复杂度为n2</p>
 <h2 id="插入排序"><a href="#插入排序" class="headerlink" title="插入排序"></a>插入排序</h2><p>插入排序跟打斗地主很像,在整理牌的时候,会根据大小不断调换牌的位置.当你插入一张牌的时候，他左边的牌应该是有序的.同理,在插入排序中，从索引1开始，与自己左边的元素做比较，若小于其中的元素则交换，但并不代表这个元素之后就不会再移动了，他后面的元素可能还会移动他.移动到最后一个元素后数组就有序了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public void sort(Comparable[] a) &#123;</span><br><span class="line">        int len = a.length;</span><br><span class="line"></span><br><span class="line">        //和左边的元素进行比较所以从索引1开始</span><br><span class="line">        for (int i = 1; i &lt; len; i++) &#123;</span><br><span class="line">            for (int j = i; j &gt;0&amp;&amp; SortTemplate.less(a[j],a[j-1]); j--) &#123;</span><br><span class="line">                SortTemplate.exchange(a, j, j - 1);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
@@ -113,7 +117,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/05/05/alogrithm/" data-id="cjvah176w0000bsv4liwb2rgu" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/05/05/alogrithm/" data-id="ck0arvjtz0000t8v4y2x1ut3s" class="article-share-link">Share</a>
       
       
     </footer>
@@ -150,7 +154,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/04/09/test-my-blog/" data-id="cjvah177d0001bsv43bjrum4h" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/04/09/test-my-blog/" data-id="ck0arvju40001t8v4rct7e2h5" class="article-share-link">Share</a>
       
       
     </footer>

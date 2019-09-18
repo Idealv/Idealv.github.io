@@ -5,15 +5,22 @@
   
 
   
-  <title>Idealv的杂七杂八</title>
+  <title>《Redis开发与运维》第二章笔记 | Idealv的杂七杂八</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Idealv的杂七杂八">
-<meta property="og:url" content="http://yoursite.com/index.html">
+  <meta name="description" content="第二章 API的理解与使用2.1.1 全局命令1.查看所有键1keys * 2.键的总数1dbsize 3.检查键是否存在(键存在返回0，不存在则返回1)1exist key 4.删除键(返回结果为删除的键的数量，若删除不存在的键返回0,且可以删除多个键)1del key 5.键过期(默认过期时间以秒为单位)1expire key seconds 6.ttl命令1ttl key ttl的返回值有：">
+<meta name="keywords" content="redis cache">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《Redis开发与运维》第二章笔记">
+<meta property="og:url" content="http://yoursite.com/2019/09/18/redis-note-ch2/index.html">
 <meta property="og:site_name" content="Idealv的杂七杂八">
+<meta property="og:description" content="第二章 API的理解与使用2.1.1 全局命令1.查看所有键1keys * 2.键的总数1dbsize 3.检查键是否存在(键存在返回0，不存在则返回1)1exist key 4.删除键(返回结果为删除的键的数量，若删除不存在的键返回0,且可以删除多个键)1del key 5.键过期(默认过期时间以秒为单位)1expire key seconds 6.ttl命令1ttl key ttl的返回值有：">
 <meta property="og:locale" content="default">
+<meta property="og:image" content="http://yoursite.com/source/images/redis_note_img/cache.png">
+<meta property="og:updated_time" content="2019-09-18T10:41:02.803Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Idealv的杂七杂八">
+<meta name="twitter:title" content="《Redis开发与运维》第二章笔记">
+<meta name="twitter:description" content="第二章 API的理解与使用2.1.1 全局命令1.查看所有键1keys * 2.键的总数1dbsize 3.检查键是否存在(键存在返回0，不存在则返回1)1exist key 4.删除键(返回结果为删除的键的数量，若删除不存在的键返回0,且可以删除多个键)1del key 5.键过期(默认过期时间以秒为单位)1expire key seconds 6.ttl命令1ttl key ttl的返回值有：">
+<meta name="twitter:image" content="http://yoursite.com/source/images/redis_note_img/cache.png">
   
     <link rel="alternate" href="/atom.xml" title="Idealv的杂七杂八" type="application/atom+xml">
   
@@ -60,9 +67,7 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-    <article id="post-redis-note-ch2" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-redis-note-ch2" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/09/18/redis-note-ch2/" class="article-date">
   <time datetime="2019-09-18T07:55:34.000Z" itemprop="datePublished">2019-09-18</time>
@@ -75,8 +80,8 @@
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/09/18/redis-note-ch2/">《Redis开发与运维》第二章笔记</a>
+    <h1 class="article-title" itemprop="name">
+      《Redis开发与运维》第二章笔记
     </h1>
   
 
@@ -272,78 +277,19 @@
     </footer>
   </div>
   
-</article>
-
-
+    
+<nav id="article-nav">
   
-    <article id="post-alogrithm" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/2019/05/05/alogrithm/" class="article-date">
-  <time datetime="2019-05-05T05:03:23.000Z" itemprop="datePublished">2019-05-05</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2019/05/05/alogrithm/">alogrithm</a>
-    </h1>
+    <a href="/2019/05/05/alogrithm/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">alogrithm</div>
+    </a>
   
+</nav>
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h1 id="《算法-第四版》第二章排序笔记"><a href="#《算法-第四版》第二章排序笔记" class="headerlink" title="《算法 第四版》第二章排序笔记"></a>《算法 第四版》第二章排序笔记</h1><p>书中讲到的排序算法主要分为以下几种:</p>
-<ul>
-<li>选择排序</li>
-<li>插入排序</li>
-<li>希尔排序</li>
-<li>归并排序</li>
-<li>快速排序</li>
-</ul>
-<h2 id="选择排序"><a href="#选择排序" class="headerlink" title="选择排序"></a>选择排序</h2><p>选择排序就是在数组中找到最小的元素,然后将它和数组第一个元素交换(默认正序,若第一个元素就是最小的元素,那就和自己交换).<br>然后在剩下的元素中找到最小的元素重复上述操作,这里需要注意数组边界防止越界</p>
-<h3 id="选择排序的特点"><a href="#选择排序的特点" class="headerlink" title="选择排序的特点"></a>选择排序的特点</h3><ul>
-<li>运行时间和输入数据无关：不管输入的数组是有序或无序的,都会进行比较找出最小元素,所以会比较低效</li>
-<li>数据移动最少:交换次数与数组大小为线性关系，会进行N次交换</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">public void sort(Comparable[] a) &#123;</span><br><span class="line">        int len = a.length;</span><br><span class="line"></span><br><span class="line">        for (int i = 0; i &lt; len; i++) &#123;</span><br><span class="line">            int min = i;</span><br><span class="line"></span><br><span class="line">            for (int j = i + 1; j &lt; len; j++)</span><br><span class="line">                //标记比已知最小元素还小的元素的索引</span><br><span class="line">                if (SortTemplate.less(a[j], a[min])) min = j;</span><br><span class="line">            //和现在的最小元素交换位置</span><br><span class="line">            SortTemplate.exchange(a, i, min);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    //以动态的眼光来看要排序的数组实际会被拆分成两个数组，</span><br><span class="line">    //已被排序的数组和未被排序的数组.代码运行会经过这样的</span><br><span class="line">    //过程,0-&gt;len找出最小的放在0,1-&gt;len找出最小的放在1,</span><br><span class="line">    //...,len-1-&gt;len找出最小的放在len-1</span><br></pre></td></tr></table></figure>
-<h3 id="对选择排序的分析"><a href="#对选择排序的分析" class="headerlink" title="对选择排序的分析"></a>对选择排序的分析</h3><p>便于理解，代码短</p>
-<p>但是过于死板，即使数组已经有序仍然会执行.效率较差,算法时间复杂度为n2</p>
-<h2 id="插入排序"><a href="#插入排序" class="headerlink" title="插入排序"></a>插入排序</h2><p>插入排序跟打斗地主很像,在整理牌的时候,会根据大小不断调换牌的位置.当你插入一张牌的时候，他左边的牌应该是有序的.同理,在插入排序中，从索引1开始，与自己左边的元素做比较，若小于其中的元素则交换，但并不代表这个元素之后就不会再移动了，他后面的元素可能还会移动他.移动到最后一个元素后数组就有序了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public void sort(Comparable[] a) &#123;</span><br><span class="line">        int len = a.length;</span><br><span class="line"></span><br><span class="line">        //和左边的元素进行比较所以从索引1开始</span><br><span class="line">        for (int i = 1; i &lt; len; i++) &#123;</span><br><span class="line">            for (int j = i; j &gt;0&amp;&amp; SortTemplate.less(a[j],a[j-1]); j--) &#123;</span><br><span class="line">                SortTemplate.exchange(a, j, j - 1);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
-<h3 id="对插入排序的分析"><a href="#对插入排序的分析" class="headerlink" title="对插入排序的分析"></a>对插入排序的分析</h3><p>适合大型且基本有序的数组，代码简单易于理解，而且非常适合元素较少的排序</p>
-<p>但对于大型的无序数组还是不够高效</p>
-<h2 id="希尔排序"><a href="#希尔排序" class="headerlink" title="希尔排序"></a>希尔排序</h2><p>希尔排序基于插入排序，插入排序的缺点就是交换元素非常慢，只能相邻的元素进行交换。希尔排序以间隔将数组分为若干个数组，这些数组有序后再进行插入排序就非常高效。具体步骤可能如下<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">2 7 3 1 5 6 8 2 3 4 </span><br><span class="line">2     1     8     4</span><br><span class="line">  7     5     2</span><br><span class="line">    3     6     4</span><br></pre></td></tr></table></figure></p>
-<p>间隔会不断变化，当间隔变成1时此时就完全是插入排序了.希尔排序通过间隔拆分成若干个数组不断进行交换位置，并且间隔不断减小，最后再进行插入排序时就很方便</p>
-<p>至于如何选择合适的间隔，这是一个数学问题，不在着重学习范围内<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">public void sort(Comparable[] a) &#123;</span><br><span class="line">    int len=a.length;</span><br><span class="line">    int h=1;</span><br><span class="line">    while (h&lt;len/3) h = 3 * h + 1;</span><br><span class="line"></span><br><span class="line">    while (h&gt;=1)&#123;</span><br><span class="line">        for (int i = h; i &lt; len; i++) &#123;</span><br><span class="line">            for (int j = i; j &gt;=h&amp;&amp;SortTemplate.less(a[j],a[j-h]) ; j-=h) &#123;</span><br><span class="line">                SortTemplate.exchange(a, j, j - h);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        h /= 3;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<h2 id="归并排序"><a href="#归并排序" class="headerlink" title="归并排序"></a>归并排序</h2><p>归并排序的核心思想是分而治之,从字面上可以简单的理解为递归的合并.将两个有序的数组合并到一个数组，并不断重复，直到整个数组有序<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">//原地归并，只需要一个数组，而不是每次归并都创建一个新数组</span><br><span class="line">    private Comparable[] aux;</span><br><span class="line"></span><br><span class="line">    public void merge(Comparable[] a,int low,int mid,int high)&#123;</span><br><span class="line">            //i:左边元素,j:右边元素</span><br><span class="line">            int i=low,j=mid+1;</span><br><span class="line">            </span><br><span class="line">            //将元素复制到辅助数组中</span><br><span class="line">            for (int k = low; k &lt;=high ; k++)</span><br><span class="line">                aux[k] = a[k];</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">            for (int k = low; k &lt;=high ; k++)</span><br><span class="line">                if (i&gt;mid)a[k]=aux[j++];//左边元素用尽,取右边元素</span><br><span class="line">                else if (j&gt;high)a[k]=aux[i++];//右边元素用尽,取左边元素</span><br><span class="line">                else if (SortTemplate.less(a[j],a[i]))a[k]=aux[j++];//右边元素小于左边元素</span><br><span class="line">                else a[k] = aux[i++];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    public void sort(Comparable[] a) &#123;</span><br><span class="line">        aux = new Comparable[a.length];</span><br><span class="line">        sort(a,0,a.length-1);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    private void sort(Comparable[] a,int low,int high)&#123;</span><br><span class="line">        //分而治之,将数组拆成小的数组排序再归并</span><br><span class="line">        if (high&lt;=low)return;</span><br><span class="line">        int mid = low + (high - low) / 2;</span><br><span class="line">        //左边排序</span><br><span class="line">        sort(a,0,mid);</span><br><span class="line">        //右边排序</span><br><span class="line">        sort(a,mid+1,high);</span><br><span class="line">        //将两个已经排序好的归并</span><br><span class="line">        merge(a,low,mid,high);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure></p>
-<p>通过下面的图将获取最直观的感受<br><img src="/images/sort/sort.png" alt></p>
-<p><img src="/images/sort/merge.png" alt></p>
-<p><img src="/images/sort/detail.png" alt></p>
-<h2 id="快速排序"><a href="#快速排序" class="headerlink" title="快速排序"></a>快速排序</h2><p>快速排序同归并排序一样用到了分治的思想,不过快排是将一个数组分成两个数组，让他们单独进行排序,当子数组有序了整个数组也就有序了,用代码和图解释起来更直白<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">public void sort(Comparable[] a) &#123;</span><br><span class="line">    sort(a,0,a.length-1);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private int partition(Comparable[] a,int low,int high)&#123;</span><br><span class="line">    int i = low, j = high - 1;</span><br><span class="line">    //默认取最低位元素为基准</span><br><span class="line">    Comparable v = a[low];</span><br><span class="line"></span><br><span class="line">    while (true)&#123;</span><br><span class="line">        while (SortTemplate.less(a[++i],v))</span><br><span class="line">            if (i==high) break;</span><br><span class="line">        while (SortTemplate.less(v,a[++j]))</span><br><span class="line">            if (j==low) break;</span><br><span class="line">        if (i&gt;=j)break;</span><br><span class="line">        SortTemplate.exchange(a, i, j);</span><br><span class="line">    &#125;</span><br><span class="line">    SortTemplate.exchange(a, low, i);</span><br><span class="line">    return j;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">private void sort(Comparable[] a,int low,int high)&#123;</span><br><span class="line">    if (high&lt;=low) return;</span><br><span class="line"></span><br><span class="line">    int j = partition(a, low, high);</span><br><span class="line"></span><br><span class="line">    sort(a,low,j-1);</span><br><span class="line">    sort(a,j+1,high);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p><img src="/images/sort/quickSort.png" alt></p>
-<p><img src="/images/sort/partition.png" alt></p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/05/05/alogrithm/" data-id="ck0p4z9bf0000okv4whz0g9oo" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/alogrithm-sort/">alogrithm sort</a></li></ul>
-
-    </footer>
-  </div>
   
 </article>
-
-
-  
-
 
 </section>
         

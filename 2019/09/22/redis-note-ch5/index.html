@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>《Redis开发与运维》第二章笔记 | Idealv的杂七杂八</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="第五章 持久化Redis拥有如此高的性能跟它将数据保存在内存中是由很大关系的，但在生产环境中，需要考虑到各种突发事件，比如停电和进程意外退出，如果没有相应的对策，存在内存的数据就会消失，这个时候就会用到Redis持久化的策略。而且Redis的持久化策略并不仅仅用来实现数据恢复，在后续的学习中Redis的复制也会用到持久化策略。 Redis的持久化策略主要分为:  RDB AOF  5.1.RDB5">
+<meta name="keywords" content="redis,cache">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《Redis开发与运维》第二章笔记">
+<meta property="og:url" content="http://yoursite.com/2019/09/22/redis-note-ch5/index.html">
+<meta property="og:site_name" content="Idealv的杂七杂八">
+<meta property="og:description" content="第五章 持久化Redis拥有如此高的性能跟它将数据保存在内存中是由很大关系的，但在生产环境中，需要考虑到各种突发事件，比如停电和进程意外退出，如果没有相应的对策，存在内存的数据就会消失，这个时候就会用到Redis持久化的策略。而且Redis的持久化策略并不仅仅用来实现数据恢复，在后续的学习中Redis的复制也会用到持久化策略。 Redis的持久化策略主要分为:  RDB AOF  5.1.RDB5">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-09-22T08:46:27.173Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="《Redis开发与运维》第二章笔记">
+<meta name="twitter:description" content="第五章 持久化Redis拥有如此高的性能跟它将数据保存在内存中是由很大关系的，但在生产环境中，需要考虑到各种突发事件，比如停电和进程意外退出，如果没有相应的对策，存在内存的数据就会消失，这个时候就会用到Redis持久化的策略。而且Redis的持久化策略并不仅仅用来实现数据恢复，在后续的学习中Redis的复制也会用到持久化策略。 Redis的持久化策略主要分为:  RDB AOF  5.1.RDB5">
+  
+    <link rel="alternate" href="/atom.xml" title="Idealv的杂七杂八" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Idealv的杂七杂八</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-redis-note-ch5" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/09/22/redis-note-ch5/" class="article-date">
+  <time datetime="2019-09-22T07:47:00.000Z" itemprop="datePublished">2019-09-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      《Redis开发与运维》第二章笔记
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="第五章-持久化"><a href="#第五章-持久化" class="headerlink" title="第五章 持久化"></a>第五章 持久化</h1><p>Redis拥有如此高的性能跟它将数据保存在内存中是由很大关系的，但在生产环境中，需要考虑到各种突发事件，比如停电和进程意外退出，<br>如果没有相应的对策，存在内存的数据就会消失，这个时候就会用到Redis持久化的策略。而且Redis的持久化策略并不仅仅用来实现数据恢<br>复，在后续的学习中Redis的复制也会用到持久化策略。</p>
+<p>Redis的持久化策略主要分为:</p>
+<ul>
+<li>RDB</li>
+<li>AOF</li>
+</ul>
+<h2 id="5-1-RDB"><a href="#5-1-RDB" class="headerlink" title="5.1.RDB"></a>5.1.RDB</h2><h3 id="5-1-1-RDB触发方式"><a href="#5-1-1-RDB触发方式" class="headerlink" title="5.1.1.RDB触发方式"></a>5.1.1.RDB触发方式</h3><p>RDB的策略是将当前数据快照保存在本地硬盘中，触发RDB的方式有两种:</p>
+<ul>
+<li>手动触发</li>
+<li>自动触发</li>
+</ul>
+<h3 id="手动触发"><a href="#手动触发" class="headerlink" title="手动触发"></a>手动触发</h3><p>手动触发主要通过执行两个命令实现,save和bgsave</p>
+<ul>
+<li>save:阻塞执行，直到RDB任务结束才能继续执行，因为Redis是单线程架构的，所以这样会造成阻塞</li>
+<li>bgsave:主进程不参与持久化操作而是fork一个子进程来执行操作，而fork操作的消耗的时间一般很短,这样就不会产生阻塞</li>
+</ul>
+<p><strong><em>因为save容易产生阻塞问题，所以已经被废弃</em></strong></p>
+<h3 id="自动触发"><a href="#自动触发" class="headerlink" title="自动触发"></a>自动触发</h3><p>1) 从节点执行全量复制(复制主机点)操作,主节点bgsave产生一个RDB文件让从节点复制数据<br>2) 执行shutdown命令后，如果没有配置AOF则默认自动执行bgsave产生RDB，防止数据丢失</p>
+<h3 id="5-1-2-bgsave流程"><a href="#5-1-2-bgsave流程" class="headerlink" title="5.1.2.bgsave流程"></a>5.1.2.bgsave流程</h3><p>1) 执行bgsave，父进程判断是否有正在执行的子进程，如果存在则直接返回<br>2) fork产生一个子进程(这个过程会阻塞父进程，但时间很短)<br>3) fork完成后，父进程继续响应操作<br>4) 子进程创建RDB文件<br>5) 子进程向父进程发送信号表示操作完成</p>
+<h3 id="5-1-3-RDB的优缺点"><a href="#5-1-3-RDB的优缺点" class="headerlink" title="5.1.3.RDB的优缺点"></a>5.1.3.RDB的优缺点</h3><h3 id="优点"><a href="#优点" class="headerlink" title="优点"></a><strong><em>优点</em></strong></h3><ul>
+<li>为紧凑压缩的二进制文件，适合用来备份和全量复制。通过定期执行bgsave，用来实现灾难恢复</li>
+<li>加载RDB数据比AOF更快</li>
+</ul>
+<h3 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a><strong><em>缺点</em></strong></h3><ul>
+<li>没有办法做到实时备份，因为fork进程开销过大</li>
+</ul>
+<h3 id="5-2-AOF-Append-Only-File"><a href="#5-2-AOF-Append-Only-File" class="headerlink" title="5.2.AOF(Append Only File)"></a>5.2.AOF(Append Only File)</h3><p>用日志的方式记录写命令，通过重新执行AOF文件来恢复数据.开启AOF很简单，就需要修改配置文件项中的appendonly yes即可。</p>
+<p><strong><em>执行流程</em></strong><br>1) 所有写命令会缓存到aof_buf中去<br>2) AOF缓冲区根据策略向磁盘同步<br>3) 随着AOF文件的膨胀，需要定期rewrite来减小文件大小<br>4) Redis文件重启时加载AOF来恢复数据</p>
+<p><strong><em>命令写入</em></strong><br>1) AOF写入采取文本协议格式，主要为了保证兼容性和避免二次开销<br>2) 采用缓冲区的理由:因为硬盘的存储速率会严重影响Redis性能,存在缓冲区能改善这个问题.</p>
+<p><strong><em>同步策略</em></strong></p>
+<ul>
+<li>always:每次执行写命令就要向硬盘同步AOF，这样性能会很差(硬盘速率远远不如内存)</li>
+<li>everysec:默认策略,每秒钟向硬盘同步，这样最多只会丢失1秒的数据</li>
+</ul>
+<p><strong><em>重写机制</em></strong><br>前面说了重写是为了压缩提及，不然随着时间的推移AOF文件会越来越大</p>
+<p><strong>rewrite后文件变小的原因</strong><br>1) 过期的数据不再写入文件<br>2) 旧的AOF包含无效命令，比如删除操作(因为现在的数据是AOF文件中命令执行的结果，所以就不需要这些无效命令，直接根据当前数据进行添加即可,这样只用保留写入命令)<br>3) 多条命令可以合并成一条命令 lpush list a,lpush list b =&gt; lpush list a b</p>
+<p><strong>重写机制的触发</strong></p>
+<ul>
+<li>手动触发:调用bgrewriteaof命令</li>
+<li>自动触发:设置参数auto-aof-rewrite-min-size(默认64M)和auto-aof-rewrite-percentage(当前AOF文件大小与上次rewrite之后的文件大小的比值)来确定触发时机</li>
+</ul>
+<p><strong><em>重写流程</em></strong><br>1) 执行AOF重写请求</p>
+<pre><code>1-1.如果当前进程正在执行AOF重写，则直接返回
+
+1.2.如果正在执行bgsave命令，则等到bgsave完成后再执行
+</code></pre><p>2) 父进程执行fork操作<br>3) fork完成之后</p>
+<pre><code>3-1.将写命令写入aof_buf中,同时根据同步策略同步到硬盘中
+
+3-2.因为Redis采取了写时复制技术,这时使用父进程通过AOF重写缓冲区来保存fork期间产生的新数据
+</code></pre><p>4) 子进程通过内存快照写入新的AOF文件中<br>5) AOF写入完成</p>
+<pre><code>5-1.子进程发信号给父进程，父进程更新统计信息
+
+5-2.父进程把AOF重写缓存区的数据append到新的AOF文件中
+
+5.3.使用新的AOF文件替换老的AOF文件
+</code></pre><h2 id="5-3-重启加载"><a href="#5-3-重启加载" class="headerlink" title="5.3.重启加载"></a>5.3.重启加载</h2><p>1) 如果开启了AOF且存在AOF文件则优先加载AOF文件<br>2) 未开启AOF或者AOF文件不存在则加载RDB文件<br>3) 加载AOF/RDB成功/失败</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/09/22/redis-note-ch5/" data-id="ck0uqmoie0008ugv4udy0zfn6" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cache/">cache</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2019/09/18/redis-note-ch3/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">《Redis开发与运维》第三章笔记</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/alogorithm/">alogorithm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cache/">cache</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/alogorithm/" style="font-size: 10px;">alogorithm</a> <a href="/tags/cache/" style="font-size: 20px;">cache</a> <a href="/tags/redis/" style="font-size: 20px;">redis</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">September 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/09/22/redis-note-ch5/">《Redis开发与运维》第二章笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2019/09/18/redis-note-ch3/">《Redis开发与运维》第三章笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2019/09/18/redis-note-ch2/">《Redis开发与运维》第二章笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/05/alogrithm/">alogrithm</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Idealv<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

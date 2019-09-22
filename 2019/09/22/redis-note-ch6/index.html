@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>《Redis开发与运维》第六章笔记 | Idealv的杂七杂八</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="第六章 复制为了满足故障恢复和负载均衡，只靠单个Redis节点是不够的。其中最基础的方式就是用复制来实现的，后续的哨兵和集群都依赖于复制 6.1.复制的建立断开与切换复制中的数据流向的两头分别为主节点和从节点(且复制反向只能从从节点到主节点,同时从节点默认只读)，默认每个Redis节点都是主节点，当建立复制的时候，一个节点会成一个主节点的从节点，这个操作通过slaveof命令实现1127.0.0.">
+<meta name="keywords" content="redis,cache">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《Redis开发与运维》第六章笔记">
+<meta property="og:url" content="http://yoursite.com/2019/09/22/redis-note-ch6/index.html">
+<meta property="og:site_name" content="Idealv的杂七杂八">
+<meta property="og:description" content="第六章 复制为了满足故障恢复和负载均衡，只靠单个Redis节点是不够的。其中最基础的方式就是用复制来实现的，后续的哨兵和集群都依赖于复制 6.1.复制的建立断开与切换复制中的数据流向的两头分别为主节点和从节点(且复制反向只能从从节点到主节点,同时从节点默认只读)，默认每个Redis节点都是主节点，当建立复制的时候，一个节点会成一个主节点的从节点，这个操作通过slaveof命令实现1127.0.0.">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2019-09-22T10:57:58.818Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="《Redis开发与运维》第六章笔记">
+<meta name="twitter:description" content="第六章 复制为了满足故障恢复和负载均衡，只靠单个Redis节点是不够的。其中最基础的方式就是用复制来实现的，后续的哨兵和集群都依赖于复制 6.1.复制的建立断开与切换复制中的数据流向的两头分别为主节点和从节点(且复制反向只能从从节点到主节点,同时从节点默认只读)，默认每个Redis节点都是主节点，当建立复制的时候，一个节点会成一个主节点的从节点，这个操作通过slaveof命令实现1127.0.0.">
+  
+    <link rel="alternate" href="/atom.xml" title="Idealv的杂七杂八" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Idealv的杂七杂八</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://yoursite.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-redis-note-ch6" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/09/22/redis-note-ch6/" class="article-date">
+  <time datetime="2019-09-22T08:48:44.000Z" itemprop="datePublished">2019-09-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      《Redis开发与运维》第六章笔记
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="第六章-复制"><a href="#第六章-复制" class="headerlink" title="第六章 复制"></a>第六章 复制</h1><p>为了满足故障恢复和负载均衡，只靠单个Redis节点是不够的。其中最基础的方式就是用复制来实现的，<br>后续的哨兵和集群都依赖于复制</p>
+<h2 id="6-1-复制的建立断开与切换"><a href="#6-1-复制的建立断开与切换" class="headerlink" title="6.1.复制的建立断开与切换"></a>6.1.复制的建立断开与切换</h2><p>复制中的数据流向的两头分别为主节点和从节点(且复制反向只能从从节点到主节点,同时从节点默认只读)，默认每个Redis节点都是主节点，当建立复制的时候，一个节点会成一个主节点的从节点，<br>这个操作通过slaveof命令实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1.6380&gt;slaveof 127.0.0.1.6379 //6380的Redis节点成为6379主节点的从节点</span><br></pre></td></tr></table></figure></p>
+<p>执行完操作后主/从节点的复制状态信息中就能查看到对于从/主的信息了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1.6379&gt;info replication</span><br><span class="line"># Replication</span><br><span class="line">role:master</span><br><span class="line">connected_slaves:1</span><br><span class="line">slave0:ip=127.0.0.1,port=6380,status=online,offset=42</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1.6380&gt;info replication</span><br><span class="line"># Replication</span><br><span class="line">role:slave</span><br><span class="line">master_host:127.0.0.1</span><br><span class="line">master_port:6379</span><br></pre></td></tr></table></figure>
+<p><strong>断开连接</strong>:通过slaveof no one来断开主从节点间的连接,同时从节点恢复主节点的身份，且从节点保留之前的主节点上的数据</p>
+<p><strong>切换主节点</strong>:通过slaveof {newHost}:{newPort}来与另一个主节点来建立复制关系<br>1) 断开与原主节点复制关系<br>2) 与新主节点建立复制关系<br>3) 删除从节点现有数据<br>4) 复制新主节点数据</p>
+<h2 id="6-2-复制原理"><a href="#6-2-复制原理" class="headerlink" title="6.2.复制原理"></a>6.2.复制原理</h2><p>1) 保存主节点信息(master_host,master_port …)<br>2) 主从建立socket连接(如果无法建立连接则通过slaveof no one来断开连接，并打印错误日志)<br>3) 发送ping命令(确认socket是否可用，主节点是否能够响应。如果主节点没有发送pong响应，则断开连接，在下次定时任务发起重连)<br>4) 权限验证(主节点设置requirepass的情况下，从节点需要携带masterauth参数并确保和主节点的requirepass参数相同从而通过验证)<br>5) 同步数据集(具体复制操作参见6.2.1)<br>6) 命令持续复制(后续主节点写入的数据同步到从节点中去)</p>
+<h3 id="6-2-1-数据同步"><a href="#6-2-1-数据同步" class="headerlink" title="6.2.1.数据同步"></a>6.2.1.数据同步</h3><ul>
+<li>全量复制(适用于初次复制)</li>
+<li>部分复制(在主从节点意外断开连接后通过部分复制将丢失的数据复制给从节点)</li>
+</ul>
+<p>新版Redis主要使用psync来进行复制，执行psync要确保以下内容</p>
+<ul>
+<li>主从节点复制offset</li>
+<li>复制积压缓冲区</li>
+<li>主节点运行Id</li>
+</ul>
+<p><strong>1.主从节点复制offset</strong></p>
+<ul>
+<li>主节点在执行写入操作后会将命令的字节长度累加记录到offset中去，这个值可以通过info replication中的master_repl_offset查看</li>
+<li>从节点收到主节点发送的数据后，也会累加自己的offset,可以通过info replication中的slave_repl_offset获取</li>
+<li>从节点每秒上报自己的offset到从节点中去,主节点可以通过info replication中的slave{slaveNo}: offset获取</li>
+</ul>
+<p>通过计算master_repl_offset - slave_offset可以得出主从节点相差的数据量</p>
+<p><strong>2.复制积压缓冲区</strong></p>
+<p>复制积压缓冲区是主节点上的一个固定长度的队列,当主节点有连接的从节点时，主节点执行写命令的时候不仅会把命令同步到从节点中去，<br>也会写入复制积压缓冲区中去，因为复制积压缓冲区定长的先入先出的性质可以用来部分复制和恢复最近丢失的数据</p>
+<p><strong>3.主节点运行Id</strong></p>
+<p>每个Redis启动后都会被分配一个40位的十六进制字符串作为唯一标识的Id。之所以不使用Host:Port的方式来唯一标识主节点是因为，<br>当主节点重启且数据变更后(RDB和AOF改变)，从节点再再基于偏移量来复制数据(此时因为数据变更了，所以主节点的偏移值无法保证正确)将会不安全了。所以为了确保不会发生这种问题，当运行Id变化后(重启后运行Id会变化)从节点将会执行全量复制。</p>
+<p><em>不改变运行Id的情况下重启:redis cli debug reload</em></p>
+<p><strong>4.psync</strong></p>
+<p>从节点通过psync来进行全量和部分复制<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">psync &#123;runId&#125; &#123;offset&#125; //runId:从节点运行Id offset:从节点已经复制的偏移量,意思就是在主节点上复制这个偏移量之后的数据</span><br></pre></td></tr></table></figure></p>
+<p>psync执行过程<br>1) 从节点发送psync {runId} {offset}给主节点<br>2) 主节点判断psync参数</p>
+<pre><code>- 如果回复+FULLRESYNC {runId} {offset}，那么从节点进行全量复制
+- 如果回复+CONTINUE，从节点进行部分复制
+- 回复+ERR，说明当前版本不支持psync，从节点发送sync进行全量复制
+</code></pre><h3 id="6-2-2-全量复制"><a href="#6-2-2-全量复制" class="headerlink" title="6.2.2.全量复制"></a>6.2.2.全量复制</h3><p>1) 发送psync，由于是第一次建立连接没有从节点没有主节点的runId和偏移量，所以发送psync -1<br>2) 主节点根据psync -1判断当前是全量复制，返回+FULLRESYNC<br>3) 从节点收到主节点响应，保存主节点运行Id和偏移量<br>4) 主节点执行bgsave生成RDB文件<br>5) 主节点发送RDB文件给从节点，从节点将RDB保存在本地<br>6) 在主节点发送RDB到从节点接收完毕的过程中，主节点任响应外部操作，这是主节点会将这些新数据缓存在复制缓冲区中，当从节点加载<br>完RDB文件后，再将缓冲区内的数据发送给从节点，防止数据丢失和主从一致性<br>7) 从节点接受完主节点的数据后清空本地的就数据<br>8) 从节点加载RDB文件<br>9) 如果当前从节点开启了AOF，会立刻执行bgrewriteaof操作，保证全量复制后AOF机制仍然能正常工作(因为清空了旧数据又导入主节点数据)</p>
+<h3 id="6-2-3-部分复制"><a href="#6-2-3-部分复制" class="headerlink" title="6.2.3.部分复制"></a>6.2.3.部分复制</h3><p>因为全量复制开销过大，所以Redis引入了部分复制的机制。当从节点复制主节点时发生了异常导致数据丢失的情况下，<br>发送psync {runId} {offset}重新获取丢失的数据,如果复制积压缓冲区中有这部分数据则发送给从节点,这样传输的数据量<br>远远小于全量复制<br>1) 主从节点网络中断，当超过repl-tiemout时，主节点任务从节点故障并断开连接<br>2) 断开连接期间主节点仍然响应操作，将写命令缓存到复制积压缓冲区中<br>3) 从节点网络恢复后，重新连接上主节点<br>4) psync {runId} {offset}要求补发数据<br>5) 主节点校验参数，如果runId等于自己的runId且offset之后的数据在复制积压缓冲区中则返回+CONTINUE<br>6) 主节点从缓冲区中将数据发送给从节点</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/09/22/redis-note-ch6/" data-id="ck0uvduxh0005g0v40gipsxmu" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cache/">cache</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2019/09/22/redis-note-ch5/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">《Redis开发与运维》第五章笔记</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/alogorithm/">alogorithm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cache/">cache</a></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/alogorithm/" style="font-size: 10px;">alogorithm</a> <a href="/tags/cache/" style="font-size: 20px;">cache</a> <a href="/tags/redis/" style="font-size: 20px;">redis</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/09/">September 2019</a></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">May 2019</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/09/22/redis-note-ch6/">《Redis开发与运维》第六章笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2019/09/22/redis-note-ch5/">《Redis开发与运维》第五章笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2019/09/18/redis-note-ch3/">《Redis开发与运维》第三章笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2019/09/18/redis-note-ch2/">《Redis开发与运维》第二章笔记</a>
+          </li>
+        
+          <li>
+            <a href="/2019/05/05/alogrithm/">alogrithm</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 Idealv<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>

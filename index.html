@@ -62,6 +62,81 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-redis-note-ch6" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/09/22/redis-note-ch6/" class="article-date">
+  <time datetime="2019-09-22T08:48:44.000Z" itemprop="datePublished">2019-09-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2019/09/22/redis-note-ch6/">《Redis开发与运维》第六章笔记</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="第六章-复制"><a href="#第六章-复制" class="headerlink" title="第六章 复制"></a>第六章 复制</h1><p>为了满足故障恢复和负载均衡，只靠单个Redis节点是不够的。其中最基础的方式就是用复制来实现的，<br>后续的哨兵和集群都依赖于复制</p>
+<h2 id="6-1-复制的建立断开与切换"><a href="#6-1-复制的建立断开与切换" class="headerlink" title="6.1.复制的建立断开与切换"></a>6.1.复制的建立断开与切换</h2><p>复制中的数据流向的两头分别为主节点和从节点(且复制反向只能从从节点到主节点,同时从节点默认只读)，默认每个Redis节点都是主节点，当建立复制的时候，一个节点会成一个主节点的从节点，<br>这个操作通过slaveof命令实现<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1.6380&gt;slaveof 127.0.0.1.6379 //6380的Redis节点成为6379主节点的从节点</span><br></pre></td></tr></table></figure></p>
+<p>执行完操作后主/从节点的复制状态信息中就能查看到对于从/主的信息了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1.6379&gt;info replication</span><br><span class="line"># Replication</span><br><span class="line">role:master</span><br><span class="line">connected_slaves:1</span><br><span class="line">slave0:ip=127.0.0.1,port=6380,status=online,offset=42</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1.6380&gt;info replication</span><br><span class="line"># Replication</span><br><span class="line">role:slave</span><br><span class="line">master_host:127.0.0.1</span><br><span class="line">master_port:6379</span><br></pre></td></tr></table></figure>
+<p><strong>断开连接</strong>:通过slaveof no one来断开主从节点间的连接,同时从节点恢复主节点的身份，且从节点保留之前的主节点上的数据</p>
+<p><strong>切换主节点</strong>:通过slaveof {newHost}:{newPort}来与另一个主节点来建立复制关系<br>1) 断开与原主节点复制关系<br>2) 与新主节点建立复制关系<br>3) 删除从节点现有数据<br>4) 复制新主节点数据</p>
+<h2 id="6-2-复制原理"><a href="#6-2-复制原理" class="headerlink" title="6.2.复制原理"></a>6.2.复制原理</h2><p>1) 保存主节点信息(master_host,master_port …)<br>2) 主从建立socket连接(如果无法建立连接则通过slaveof no one来断开连接，并打印错误日志)<br>3) 发送ping命令(确认socket是否可用，主节点是否能够响应。如果主节点没有发送pong响应，则断开连接，在下次定时任务发起重连)<br>4) 权限验证(主节点设置requirepass的情况下，从节点需要携带masterauth参数并确保和主节点的requirepass参数相同从而通过验证)<br>5) 同步数据集(具体复制操作参见6.2.1)<br>6) 命令持续复制(后续主节点写入的数据同步到从节点中去)</p>
+<h3 id="6-2-1-数据同步"><a href="#6-2-1-数据同步" class="headerlink" title="6.2.1.数据同步"></a>6.2.1.数据同步</h3><ul>
+<li>全量复制(适用于初次复制)</li>
+<li>部分复制(在主从节点意外断开连接后通过部分复制将丢失的数据复制给从节点)</li>
+</ul>
+<p>新版Redis主要使用psync来进行复制，执行psync要确保以下内容</p>
+<ul>
+<li>主从节点复制offset</li>
+<li>复制积压缓冲区</li>
+<li>主节点运行Id</li>
+</ul>
+<p><strong>1.主从节点复制offset</strong></p>
+<ul>
+<li>主节点在执行写入操作后会将命令的字节长度累加记录到offset中去，这个值可以通过info replication中的master_repl_offset查看</li>
+<li>从节点收到主节点发送的数据后，也会累加自己的offset,可以通过info replication中的slave_repl_offset获取</li>
+<li>从节点每秒上报自己的offset到从节点中去,主节点可以通过info replication中的slave{slaveNo}: offset获取</li>
+</ul>
+<p>通过计算master_repl_offset - slave_offset可以得出主从节点相差的数据量</p>
+<p><strong>2.复制积压缓冲区</strong></p>
+<p>复制积压缓冲区是主节点上的一个固定长度的队列,当主节点有连接的从节点时，主节点执行写命令的时候不仅会把命令同步到从节点中去，<br>也会写入复制积压缓冲区中去，因为复制积压缓冲区定长的先入先出的性质可以用来部分复制和恢复最近丢失的数据</p>
+<p><strong>3.主节点运行Id</strong></p>
+<p>每个Redis启动后都会被分配一个40位的十六进制字符串作为唯一标识的Id。之所以不使用Host:Port的方式来唯一标识主节点是因为，<br>当主节点重启且数据变更后(RDB和AOF改变)，从节点再再基于偏移量来复制数据(此时因为数据变更了，所以主节点的偏移值无法保证正确)将会不安全了。所以为了确保不会发生这种问题，当运行Id变化后(重启后运行Id会变化)从节点将会执行全量复制。</p>
+<p><em>不改变运行Id的情况下重启:redis cli debug reload</em></p>
+<p><strong>4.psync</strong></p>
+<p>从节点通过psync来进行全量和部分复制<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">psync &#123;runId&#125; &#123;offset&#125; //runId:从节点运行Id offset:从节点已经复制的偏移量,意思就是在主节点上复制这个偏移量之后的数据</span><br></pre></td></tr></table></figure></p>
+<p>psync执行过程<br>1) 从节点发送psync {runId} {offset}给主节点<br>2) 主节点判断psync参数</p>
+<pre><code>- 如果回复+FULLRESYNC {runId} {offset}，那么从节点进行全量复制
+- 如果回复+CONTINUE，从节点进行部分复制
+- 回复+ERR，说明当前版本不支持psync，从节点发送sync进行全量复制
+</code></pre><h3 id="6-2-2-全量复制"><a href="#6-2-2-全量复制" class="headerlink" title="6.2.2.全量复制"></a>6.2.2.全量复制</h3><p>1) 发送psync，由于是第一次建立连接没有从节点没有主节点的runId和偏移量，所以发送psync -1<br>2) 主节点根据psync -1判断当前是全量复制，返回+FULLRESYNC<br>3) 从节点收到主节点响应，保存主节点运行Id和偏移量<br>4) 主节点执行bgsave生成RDB文件<br>5) 主节点发送RDB文件给从节点，从节点将RDB保存在本地<br>6) 在主节点发送RDB到从节点接收完毕的过程中，主节点任响应外部操作，这是主节点会将这些新数据缓存在复制缓冲区中，当从节点加载<br>完RDB文件后，再将缓冲区内的数据发送给从节点，防止数据丢失和主从一致性<br>7) 从节点接受完主节点的数据后清空本地的就数据<br>8) 从节点加载RDB文件<br>9) 如果当前从节点开启了AOF，会立刻执行bgrewriteaof操作，保证全量复制后AOF机制仍然能正常工作(因为清空了旧数据又导入主节点数据)</p>
+<h3 id="6-2-3-部分复制"><a href="#6-2-3-部分复制" class="headerlink" title="6.2.3.部分复制"></a>6.2.3.部分复制</h3><p>因为全量复制开销过大，所以Redis引入了部分复制的机制。当从节点复制主节点时发生了异常导致数据丢失的情况下，<br>发送psync {runId} {offset}重新获取丢失的数据,如果复制积压缓冲区中有这部分数据则发送给从节点,这样传输的数据量<br>远远小于全量复制<br>1) 主从节点网络中断，当超过repl-tiemout时，主节点任务从节点故障并断开连接<br>2) 断开连接期间主节点仍然响应操作，将写命令缓存到复制积压缓冲区中<br>3) 从节点网络恢复后，重新连接上主节点<br>4) psync {runId} {offset}要求补发数据<br>5) 主节点校验参数，如果runId等于自己的runId且offset之后的数据在复制积压缓冲区中则返回+CONTINUE<br>6) 主节点从缓冲区中将数据发送给从节点</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://yoursite.com/2019/09/22/redis-note-ch6/" data-id="ck0uvduxh0005g0v40gipsxmu" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cache/">cache</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-redis-note-ch5" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2019/09/22/redis-note-ch5/" class="article-date">
@@ -111,21 +186,21 @@
 <li>没有办法做到实时备份，因为fork进程开销过大</li>
 </ul>
 <h3 id="5-2-AOF-Append-Only-File"><a href="#5-2-AOF-Append-Only-File" class="headerlink" title="5.2.AOF(Append Only File)"></a>5.2.AOF(Append Only File)</h3><p>用日志的方式记录写命令，通过重新执行AOF文件来恢复数据.开启AOF很简单，就需要修改配置文件项中的appendonly yes即可。</p>
-<p><strong><em>执行流程</em></strong><br>1) 所有写命令会缓存到aof_buf中去<br>2) AOF缓冲区根据策略向磁盘同步<br>3) 随着AOF文件的膨胀，需要定期rewrite来减小文件大小<br>4) Redis文件重启时加载AOF来恢复数据</p>
-<p><strong><em>命令写入</em></strong><br>1) AOF写入采取文本协议格式，主要为了保证兼容性和避免二次开销<br>2) 采用缓冲区的理由:因为硬盘的存储速率会严重影响Redis性能,存在缓冲区能改善这个问题.</p>
-<p><strong><em>同步策略</em></strong></p>
+<p><strong>执行流程</strong><br>1) 所有写命令会缓存到aof_buf中去<br>2) AOF缓冲区根据策略向磁盘同步<br>3) 随着AOF文件的膨胀，需要定期rewrite来减小文件大小<br>4) Redis文件重启时加载AOF来恢复数据</p>
+<p><strong>命令写入</strong><br>1) AOF写入采取文本协议格式，主要为了保证兼容性和避免二次开销<br>2) 采用缓冲区的理由:因为硬盘的存储速率会严重影响Redis性能,存在缓冲区能改善这个问题.</p>
+<p><strong>同步策略</strong></p>
 <ul>
 <li>always:每次执行写命令就要向硬盘同步AOF，这样性能会很差(硬盘速率远远不如内存)</li>
 <li>everysec:默认策略,每秒钟向硬盘同步，这样最多只会丢失1秒的数据</li>
 </ul>
-<p><strong><em>重写机制</em></strong><br>前面说了重写是为了压缩提及，不然随着时间的推移AOF文件会越来越大</p>
+<p><strong>重写机制</strong><br>前面说了重写是为了压缩提及，不然随着时间的推移AOF文件会越来越大</p>
 <p><strong>rewrite后文件变小的原因</strong><br>1) 过期的数据不再写入文件<br>2) 旧的AOF包含无效命令，比如删除操作(因为现在的数据是AOF文件中命令执行的结果，所以就不需要这些无效命令，直接根据当前数据进行添加即可,这样只用保留写入命令)<br>3) 多条命令可以合并成一条命令 lpush list a,lpush list b =&gt; lpush list a b</p>
 <p><strong>重写机制的触发</strong></p>
 <ul>
 <li>手动触发:调用bgrewriteaof命令</li>
 <li>自动触发:设置参数auto-aof-rewrite-min-size(默认64M)和auto-aof-rewrite-percentage(当前AOF文件大小与上次rewrite之后的文件大小的比值)来确定触发时机</li>
 </ul>
-<p><strong><em>重写流程</em></strong><br>1) 执行AOF重写请求</p>
+<p><strong>重写流程</strong><br>1) 执行AOF重写请求</p>
 <pre><code>1-1.如果当前进程正在执行AOF重写，则直接返回
 
 1.2.如果正在执行bgsave命令，则等到bgsave完成后再执行
@@ -144,7 +219,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/09/22/redis-note-ch5/" data-id="ck0uqoh9a000d3ov4thn1y5vl" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/09/22/redis-note-ch5/" data-id="ck0uvduxf0004g0v44g4zlr3g" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cache/">cache</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li></ul>
@@ -305,7 +380,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/09/18/redis-note-ch3/" data-id="ck0uqoh8q00033ov4v44o0ew3" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/09/18/redis-note-ch3/" data-id="ck0uvduxd0003g0v47lgbmcvz" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cache/">cache</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li></ul>
@@ -519,7 +594,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/09/18/redis-note-ch2/" data-id="ck0uqoh8h00003ov4a960sdqq" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/09/18/redis-note-ch2/" data-id="ck0uvdux80001g0v4swz19j66" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/cache/">cache</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li></ul>
@@ -586,7 +661,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://yoursite.com/2019/05/05/alogrithm/" data-id="ck0uqoh8m00013ov42oi7wrii" class="article-share-link">Share</a>
+      <a data-url="http://yoursite.com/2019/05/05/alogrithm/" data-id="ck0uvdux00000g0v4dh7a6cb3" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/alogorithm/">alogorithm</a></li></ul>
@@ -641,6 +716,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2019/09/22/redis-note-ch6/">《Redis开发与运维》第六章笔记</a>
+          </li>
         
           <li>
             <a href="/2019/09/22/redis-note-ch5/">《Redis开发与运维》第五章笔记</a>
